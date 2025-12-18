@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Screen Image</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            /* overflow: hidden; Removed to allow scrolling */
+        }
+
+        /* Removed background-image class styles as we are using img tag */
+        img.full-screen-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #earth-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: block;
+        }
+
+        #earth-img {
+            width: 140px;
+            /* Adjust size as needed */
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="back1.png" alt="Full Screen Background" class="full-screen-img">
+
+    <a href="sub.html" id="earth-link">
+        <img src="earthF.png" alt="Earth" id="earth-img">
+    </a>
+
+    <script>
+        const earthImg = document.getElementById('earth-img');
+
+        // Listen for mouse movement
+        document.addEventListener('mousemove', (event) => {
+            const width = window.innerWidth;
+            const x = event.clientX;
+
+            // Calculate opacity based on horizontal position
+            // Using logic: Flicker effect based on movement, or simple position mapping?
+            // User said: "appear and disappear as mouse scrolls left/right"
+            // Let's use a sine wave function for continuous appearing/disappearing as you move across
+
+            const frequency = 0.03; // Adjust for speed of flickering
+            const opacity = (Math.sin(x * frequency) + 1) / 2; // Normalize to 0-1
+
+            // To make it distinct "appear/disappear", maybe threshold it or just use the sine value directly
+            earthImg.style.opacity = opacity;
+        });
+    </script>
+</body>
+
+</html>
