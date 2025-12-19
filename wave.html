@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>바이하트로부터</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #text-container {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            transform: translateY(-50%);
+            color: #fff;
+            font-family: 'Batang', 'Times New Roman', serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 10;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+
+        .poem-line {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .poem-char {
+            display: inline-block;
+            opacity: 0;
+            animation: fadeIn 2s ease forwards, fadeOut 2s ease forwards;
+        }
+
+        /* Persistent Text Styling */
+        .poem-char-persistent {
+            display: inline-block;
+            opacity: 0;
+            animation: fadeIn 2s ease forwards;
+            /* No fadeOut */
+            cursor: pointer;
+            pointer-events: auto;
+            /* Enable clicks */
+            transition: color 0.3s, font-size 0.3s;
+        }
+
+        .poem-char-persistent:hover {
+            color: #4000b6;
+            /* Gold color on hover */
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(88, 0, 239, 0.8);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                filter: blur(0px);
+            }
+
+            to {
+                opacity: 0;
+                filter: blur(4px);
+                transform: translateY(-5px);
+            }
+        }
+
+        #sonete-img {
+            position: absolute;
+            top: 50%;
+            right: 10%;
+            /* Right side */
+            transform: translateY(-50%);
+            width: 300px;
+            height: auto;
+            display: none;
+            /* Hidden by default */
+            z-index: 20;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            transform-origin: center center;
+        }
+
+        #back-link {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: 'Batang', serif;
+            font-size: 2rem;
+            text-decoration: none;
+            display: none;
+            /* Hidden by default */
+            z-index: 30;
+            perspective: 1000px;
+            /* For 3D effect */
+        }
+
+        #back-link span {
+            display: inline-block;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        /* Page turn effect on hover */
+        #back-link:hover span {
+            /* Rotate like a page turning right to left */
+            transform: rotateY(-180deg);
+        }
+
+        /* Front and Back of the "page" text */
+        /* Actually user just said "effect like page turning". 
+           Simple rotation might be enough or just "flip". 
+           Let's try a transform-origin change for "page" feel. */
+        #back-link span {
+            transform-origin: left center;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="text-container"></div>
+    <!-- Image to appear on click -->
+    <img id="sonete-img" src="sonete.png" alt="Sonnet Image">
+    <!-- Back to Cover Link -->
+    <a id="back-link" href="index.html"><span>다시 표지로 돌아간다</span></a>
+
+    <script>
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+        var progress = 0;
+        var img1 = new Image();
+        var img2 = new Image();
+        var imagesLoaded = 0;
+        var textTriggered = false;
+        var soneteVisible = false;
+
+        var poem = `감미롭고 고요한 명상에 잠기며 지난 옛일을 추억 해 본다
+내가 찾던 많은 것은 어디로 갔나
+귀한 시간 낭비한 비애를 애탄하노라
+죽음의 밤에 숨은 소중한 친구여,
+메말랐던 내 눈은 눈물에 잠기네
+오래 전 끝난 사랑을 다시 슬퍼하고,
+사라져 버린 아픔을 탄식하노라
+지난 날의 슬픔이 가슴을 후벼 파고
+젖어들어 그 사연들 무거워 지니
+전에 치른 슬픔 하나 하나 헤아려 
+아니 한 듯 새로이 아파하네.
+친구여, 그대를 생각하면 상처는 아물고 슬픔은 끝나도다.
+
+
+                                          - 윌리엄 셰익스피어 〈소네트〉`;
+
+        function setCanvasSize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        setCanvasSize();
+        window.addEventListener('resize', setCanvasSize);
+
+        function checkLoad() {
+            imagesLoaded = imagesLoaded + 1;
+            if (imagesLoaded === 2) {
+                startAnimation();
+            }
+        }
+
+        img1.crossOrigin = "anonymous";
+        img1.onload = checkLoad;
+        img1.src = 'HbookL.JPG';
+
+        img2.crossOrigin = "anonymous";
+        img2.onload = checkLoad;
+        img2.src = 'Hsea.jpg';
+
+        function startAnimation() {
+            var tempCanvas = document.createElement('canvas');
+            var tempCtx = tempCanvas.getContext('2d');
+
+            function animate() {
+                if (!textTriggered) {
+                    progress += 0.004;
+                }
+
+                if (progress > 2.2 && !textTriggered) {
+                    textTriggered = true;
+                    startTextAnimation();
+                }
+
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.drawImage(img2, 0, 0, canvas.width, canvas.height);
+                tempCtx.drawImage(img1, 0, 0, canvas.width, canvas.height);
+
+                var imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+                var pixels = imageData.data;
+                var h = canvas.height;
+                var w = canvas.width;
+                var cx = w / 2;
+
+                for (var y = 0; y < h; y += 1) {
+                    var rowSine = Math.sin(y * 0.015 + progress * 4) * 0.1 +
+                        Math.sin(y * 0.05 + progress * 2) * 0.05;
+                    var yNoiseFactor = y * 78.233;
+
+                    for (var x = 0; x < w; x += 1) {
+                        var i = (y * w + x) * 4;
+
+                        var noise = Math.abs((Math.sin(x * 12.9898 + yNoiseFactor) * 43758.5453) % 1);
+                        var noiseW = 0.4;
+                        var thresh = 0;
+
+                        if (x >= cx) {
+                            var normDist = (x - cx) / (w / 2);
+                            thresh = (progress * 1.5) - normDist + rowSine;
+                        } else {
+                            var normDist = (cx - x) / (w / 2);
+                            var leftProgress = progress - 1.0;
+                            if (leftProgress < 0) leftProgress = -0.5;
+                            thresh = (leftProgress * 1.5) - normDist + rowSine;
+                        }
+
+                        if (thresh > 0) {
+                            if (thresh < noiseW) {
+                                if (noise < thresh / noiseW) {
+                                    pixels[i + 3] = 0;
+                                }
+                            } else {
+                                pixels[i + 3] = 0;
+                            }
+                        }
+                    }
+                }
+
+                tempCtx.putImageData(imageData, 0, 0);
+                ctx.drawImage(tempCanvas, 0, 0);
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function startTextAnimation() {
+            var container = document.getElementById('text-container');
+            var lines = poem.split('\n');
+            var globalDelay = 0;
+            var charInterval = 200;
+            var stayDuration = 8000;
+
+            // Text to keep
+            var targetText = "〈소네트〉";
+            var soneteImg = document.getElementById('sonete-img');
+            var startX = 0;
+            var startY = 0;
+            var backLink = document.getElementById('back-link');
+
+            lines.forEach(function (line, lineIndex) {
+                var lineDiv = document.createElement('div');
+                lineDiv.className = 'poem-line';
+
+                // Check if this line contains the target text
+                var hasTarget = line.includes(targetText);
+                var targetStartIndex = line.indexOf(targetText);
+
+                var chars = line.split('');
+                chars.forEach(function (char, charIndex) {
+                    var span = document.createElement('span');
+                    span.textContent = char;
+
+                    // Determine if this char is part of "〈소네트〉"
+                    // Note: This logic assumes target doesn't appear multiple times unpredictably
+                    var isTargetChar = false;
+                    if (hasTarget && charIndex >= targetStartIndex && charIndex < targetStartIndex + targetText.length) {
+                        isTargetChar = true;
+                    }
+
+                    if (isTargetChar) {
+                        span.className = 'poem-char-persistent'; // Different class
+                        span.style.animationDelay = globalDelay + 'ms'; // No fade out
+
+                        // Add click event for interaction
+                        span.addEventListener('click', function (e) {
+                            e.stopPropagation(); // prevent bubbling issues
+                            // Hide background Hsea.jpg (Canvas)
+                            canvas.style.display = 'none';
+                            // Show sonete.png
+                            soneteImg.style.display = 'block';
+                            soneteVisible = true;
+
+                            // Store initial mouse position
+                            startX = e.clientX;
+                            startY = e.clientY;
+                            // Optional: Hide other text? Or keep it? User said "Hsea.jpg vanishes", nothing about other text.
+                        });
+                    } else {
+                        span.className = 'poem-char';
+                        span.style.animationDelay = globalDelay + 'ms, ' + (globalDelay + stayDuration) + 'ms';
+                    }
+
+                    lineDiv.appendChild(span);
+                    globalDelay += charInterval;
+                });
+
+                container.appendChild(lineDiv);
+                globalDelay += 800;
+            });
+
+            // Zoom Interaction Logic
+            var vanished = false;
+
+            document.addEventListener('mousemove', function (e) {
+                if (!soneteVisible || vanished) return;
+
+                var width = window.innerWidth;
+                var height = window.innerHeight;
+                var x = e.clientX;
+                var y = e.clientY;
+
+                // Relative Zoom Logic
+                // dx: distance moved to the right from startX
+                var dx = x - startX;
+
+                // If moving left from click, clamp to 0 (no zoom out below 1x)
+                if (dx < 0) dx = 0;
+
+                // Calculate zoom based on remaining width available
+                // If click is at 80% width, we have 20% width to do the full zoom? 
+                // Or just use a fixed sensitivity factor. 
+                // Let's use fixed factor for consistent feel: e.g. every 50px = +1x zoom?
+                // Or map relative to screen width.
+
+                var sensitivity = 40; // High sensitivity to reach 20x quickly-ish
+                var zoomX = 1 + (dx / width) * sensitivity;
+
+                // Y Axis: Dampening or Zoom Out logic
+                // If we move away from startY? Or just move down? "Up/Down changes zoom".
+                // Let's keep the dampening logic consistent but maybe relative too?
+                // User said "move up/down -> zoom out". 
+                // Let's rely mainly on X for Zoom In. And Y simply reduces the calculated scale.
+
+                var dy = Math.abs(y - startY); // Deviation from initial Y
+                var dampening = (dy / height) * 10; // The more you move vertically, the less zoomed it is
+
+                var scale = zoomX - dampening;
+                if (scale < 1) scale = 1;
+
+                // Vanishing Point Threshold
+                if (scale > 20) {
+                    vanished = true;
+                    soneteImg.style.display = 'none'; // Gone
+                    container.style.display = 'none'; // Text Gone
+                    backLink.style.display = 'block'; // Link Only
+                    return;
+                }
+
+                // Show/Hide Link based on scale (before vanishing)
+                // User said "When image vanishes... text appears". 
+                // So maybe hide link until vanished? 
+                // "이미지가 없어지면... '다시 표지로 돌아간다'라는 텍스트만 띄워져 있으면 될 것 같아"
+                // So link applies MAINLY when vanished. 
+
+                if (vanished) {
+                    backLink.style.display = 'block';
+                } else {
+                    backLink.style.display = 'none';
+                }
+
+                // Apply Zoom
+                soneteImg.style.transform = 'translateY(-50%) scale(' + scale + ')';
+            });
+        }
+    </script>
+</body>
+
+</html>

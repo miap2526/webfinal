@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>요정님 어서오고</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Batang', 'Times New Roman', serif;
+            color: #333;
+            overflow: hidden;
+        }
+
+        #container {
+            text-align: center;
+            opacity: 1;
+            transition: opacity 1s ease;
+            position: relative;
+        }
+
+        .text-stage {
+            font-size: 1.8rem;
+            line-height: 2;
+            margin: 20px 0;
+        }
+
+        .char {
+            display: inline-block;
+            transition: transform 0.3s, color 0.3s;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .clickable {
+            cursor: pointer;
+            color: #333;
+            border-bottom: 2px dotted #aaa;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .clickable:hover {
+            color: #ff9a9e;
+        }
+
+        /* Big '이' style - Angular blocky font */
+        .big-char {
+            font-size: 15rem;
+            font-weight: bold;
+            font-family: 'Black Ops One', 'Impact', sans-serif;
+            cursor: pointer;
+            color: #333;
+            transition: all 0.1s;
+            display: inline-block;
+            position: relative;
+        }
+
+        /* Pixel noise fragmentation effect */
+        .big-char:hover {
+            animation: pixelNoise 0.1s infinite steps(1);
+        }
+
+        @keyframes pixelNoise {
+            0% {
+                filter: url(#noise1);
+                transform: translate(2px, -1px);
+            }
+
+            20% {
+                filter: url(#noise2);
+                transform: translate(-3px, 2px);
+            }
+
+            40% {
+                filter: url(#noise1);
+                transform: translate(1px, 3px);
+            }
+
+            60% {
+                filter: url(#noise2);
+                transform: translate(-2px, -2px);
+            }
+
+            80% {
+                filter: url(#noise1);
+                transform: translate(3px, 1px);
+            }
+
+            100% {
+                filter: url(#noise2);
+                transform: translate(-1px, -3px);
+            }
+        }
+
+        .currency-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin: 30px 0;
+            font-family: 'Georgia', serif;
+        }
+
+        input[type="number"] {
+            margin-top: 40px;
+            padding: 10px;
+            font-size: 2rem;
+            border: none;
+            background: repeating-linear-gradient(90deg, #333 0, #333 1px, transparent 1px, transparent 4px);
+            background-size: 100% 3px;
+            background-repeat: no-repeat;
+            background-position: bottom;
+            color: #333;
+            text-align: center;
+            outline: none;
+            width: 200px;
+            font-family: 'Batang', serif;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .result-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        img.result-image {
+            max-width: 80%;
+            max-height: 60vh;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Fairy message overlay */
+        .fairy-message {
+            margin-top: 30px;
+            font-size: 1.5rem;
+            font-family: 'Batang', serif;
+            color: #ef79ff;
+            animation: shimmer 2s ease-in-out infinite, fadeInUp 1s ease forwards;
+            text-shadow: 0 0 10px rgb(255, 143, 160), 0 0 20px rgb(0, 242, 255);
+        }
+
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                opacity: 0.7;
+                text-shadow: 0 0 10px rgb(0, 242, 255), 0 0 20px rgb(255, 182, 193);
+            }
+
+            50% {
+                opacity: 1;
+                text-shadow: 0 0 20px rgb(255, 217, 0), 0 0 40px rgba(255, 182, 193, 0.986);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .link-row {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.2rem;
+        }
+
+        .link-row a {
+            color: #ef79ff;
+            text-decoration: none;
+            font-family: 'Black Ops One', 'Impact', sans-serif;
+            text-shadow: 0 0 15px #6b0080, 0 0 30px #4a0060;
+        }
+
+        .link-row a:hover {
+            color: #fff;
+        }
+
+        .link-row .or-text {
+            color: #6b0080;
+            font-weight: bold;
+        }
+
+        .slide-link {
+            position: relative;
+            display: inline-block;
+        }
+
+        .slide-link:hover {
+            animation: slideOut 0.6s ease forwards;
+        }
+
+        @keyframes slideOut {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            40% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            41% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Sparkle particles */
+        .sparkle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #ffee8a 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes sparkleFloat {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: translateY(0) scale(0.5);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translateY(-20px) scale(1);
+            }
+
+            80% {
+                opacity: 0.8;
+                transform: translateY(-60px) scale(0.8);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- SVG Filters for pixel noise effect -->
+    <svg style="position: absolute; width: 0; height: 0;">
+        <defs>
+            <filter id="noise1">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" xChannelSelector="R"
+                    yChannelSelector="G" />
+            </filter>
+            <filter id="noise2">
+                <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" xChannelSelector="R"
+                    yChannelSelector="B" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div id="container">
+    </div>
+
+    <script>
+        // --- Configuration Area (수정 가능한 영역) ---
+
+        const imageList = [
+            "TH1.png",
+            "TH2.png",
+            "TH3.png",
+            "TH4.png",
+            "TH5.png",
+            "TH6.png",
+            "TH7.png",
+            "TH8.png"
+        ];
+
+        // ------------------------------------------
+
+        const container = document.getElementById('container');
+        let stage = 0;
+        let enteredNumber = 0;
+
+        function formatKoreanCurrency(num) {
+            return num.toLocaleString('ko-KR') + '₩';
+        }
+
+        function getFairyMessage(num) {
+            if (num >= 50000) {
+                return "당신은 정말 최고의 이빨 요정이었습니다";
+            } else if (num >= 10000) {
+                return "당신은 꽤나 좋은 이빨 요정이었습니다";
+            } else if (num >= 5000) {
+                return "당신은 이빨 요정이었습니다";
+            } else {
+                return "좀 더 후한 이빨 요정이 되어주세요";
+            }
+        }
+
+        function createSparkles() {
+            for (let i = 0; i < 20; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + 'vw';
+                sparkle.style.top = Math.random() * 100 + 'vh';
+                sparkle.style.animationDelay = Math.random() * 3 + 's';
+                sparkle.style.animationDuration = (2 + Math.random() * 2) + 's';
+                document.body.appendChild(sparkle);
+            }
+        }
+
+        function renderStage() {
+            container.style.opacity = 0;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+
+                if (stage === 0) {
+                    const p = document.createElement('p');
+                    p.className = 'text-stage';
+
+                    "누군가는 잠들어 있고, ".split('').forEach(char => {
+                        const s = document.createElement('span');
+                        s.textContent = char;
+                        s.className = 'char';
+                        if (char !== ' ') s.style.transform = `rotate(${Math.random() * 30 - 15}deg) translateY(${Math.random() * 10 - 5}px)`;
+                        p.appendChild(s);
+                    });
+
+                    const target = document.createElement('span');
+                    target.className = 'clickable';
+                    target.style.display = 'inline-block';
+                    target.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+
+                    "당신은".split('').forEach(char => {
+                        const s = document.createElement('span');
+                        s.textContent = char;
+                        s.className = 'char';
+                        s.style.transform = `rotate(${Math.random() * 20 - 10}deg) translateY(${Math.random() * 5}px)`;
+                        target.appendChild(s);
+                    });
+                    p.appendChild(target);
+
+                    " 깨어 있다.".split('').forEach(char => {
+                        const s = document.createElement('span');
+                        s.textContent = char;
+                        s.className = 'char';
+                        if (char !== ' ') s.style.transform = `rotate(${Math.random() * 30 - 15}deg) translateY(${Math.random() * 10 - 5}px)`;
+                        p.appendChild(s);
+                    });
+
+                    container.appendChild(p);
+
+                    target.addEventListener('click', () => {
+                        stage = 1;
+                        renderStage();
+                    });
+
+                } else if (stage === 1) {
+                    const p = document.createElement('p');
+                    p.className = 'text-stage';
+
+                    "남겨야 할 ".split('').forEach(char => {
+                        const s = document.createElement('span');
+                        s.textContent = char;
+                        s.className = 'char';
+                        if (char !== ' ') s.style.transform = `rotate(${Math.random() * 25 - 12.5}deg) translateY(${Math.random() * 10 - 5}px)`;
+                        p.appendChild(s);
+                    });
+
+                    const target1 = document.createElement('span');
+                    target1.className = 'clickable char';
+                    target1.innerText = "것";
+                    target1.style.display = 'inline-block';
+                    target1.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+                    p.appendChild(target1);
+
+                    container.appendChild(p);
+
+                    target1.addEventListener('click', () => {
+                        stage = 1.5;
+                        renderStage();
+                    });
+
+                } else if (stage === 1.5) {
+                    const bigChar = document.createElement('span');
+                    bigChar.className = 'big-char';
+                    bigChar.innerText = "이";
+
+                    container.appendChild(bigChar);
+
+                    bigChar.addEventListener('click', () => {
+                        stage = 2;
+                        renderStage();
+                    });
+
+                } else if (stage === 2) {
+                    const p1 = document.createElement('p');
+                    p1.className = 'text-stage';
+                    const text1 = "있다.";
+                    text1.split('').forEach(char => {
+                        const s = document.createElement('span');
+                        s.textContent = char;
+                        s.className = 'char';
+                        if (char !== ' ') s.style.transform = `rotate(${Math.random() * 25 - 12.5}deg) translateY(${Math.random() * 10 - 5}px)`;
+                        p1.appendChild(s);
+                    });
+
+                    const p2 = document.createElement('p');
+                    p2.className = 'text-stage';
+                    const text2 = "얼마나 남길 것인지 알려주세요.";
+                    text2.split('').forEach(char => {
+                        const s = document.createElement('span');
+                        s.textContent = char;
+                        s.className = 'char';
+                        if (char !== ' ') s.style.transform = `rotate(${Math.random() * 25 - 12.5}deg) translateY(${Math.random() * 10 - 5}px)`;
+                        p2.appendChild(s);
+                    });
+
+                    container.appendChild(p1);
+                    container.appendChild(p2);
+
+                    const input = document.createElement('input');
+                    input.type = "number";
+                    input.placeholder = "0";
+                    input.autofocus = true;
+                    input.style.transform = `rotate(${Math.random() * 2 - 1}deg)`;
+
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            enteredNumber = parseInt(input.value) || 0;
+                            stage = 2.5;
+                            renderStage();
+                        }
+                    });
+
+                    container.appendChild(input);
+                    input.focus();
+
+                } else if (stage === 2.5) {
+                    const currencyDiv = document.createElement('div');
+                    currencyDiv.className = 'currency-display';
+                    currencyDiv.innerText = formatKoreanCurrency(enteredNumber);
+                    currencyDiv.style.transform = `rotate(${Math.random() * 6 - 3}deg)`;
+                    container.appendChild(currencyDiv);
+
+                    setTimeout(() => {
+                        stage = 3;
+                        renderStage();
+                    }, 2000);
+
+                } else if (stage === 3) {
+                    // Set background image
+                    document.body.style.backgroundImage = "url('016.jpg')";
+                    document.body.style.backgroundSize = "cover";
+                    document.body.style.backgroundPosition = "center";
+                    document.body.style.backgroundColor = "transparent";
+
+                    const randomIndex = Math.floor(Math.random() * imageList.length);
+                    const selectedImage = imageList[randomIndex];
+
+                    const img = document.createElement('img');
+                    img.src = selectedImage;
+                    img.className = 'result-image';
+                    img.id = 'random-image';
+                    img.alt = "Memory";
+                    img.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+                    img.style.transition = 'opacity 2s ease';
+
+                    container.appendChild(img);
+
+                    // Add fairy message after image
+                    const message = document.createElement('p');
+                    message.className = 'fairy-message';
+                    message.innerText = getFairyMessage(enteredNumber);
+                    container.appendChild(message);
+
+                    // Add link row with two options
+                    const linkRow = document.createElement('div');
+                    linkRow.className = 'link-row';
+
+                    const link1 = document.createElement('a');
+                    link1.href = 'index.html';
+                    link1.innerText = '노트로 돌아가기';
+
+                    const orText = document.createElement('span');
+                    orText.className = 'or-text';
+                    orText.innerText = '혹은';
+
+                    const link2 = document.createElement('a');
+                    link2.href = 'endofthenote.html';
+                    link2.className = 'slide-link';
+                    link2.innerText = '이만 닫는다.';
+
+                    linkRow.appendChild(link1);
+                    linkRow.appendChild(orText);
+                    linkRow.appendChild(link2);
+                    container.appendChild(linkRow);
+
+                    // Create sparkle particles
+                    createSparkles();
+
+                    // Fade out the random image after delay, leaving only background and message
+                    setTimeout(() => {
+                        img.style.opacity = '0';
+                        setTimeout(() => {
+                            img.style.display = 'none';
+                        }, 2000);
+                    }, 3000);
+                }
+
+                container.style.opacity = 1;
+            }, 500);
+        }
+
+        renderStage();
+
+    </script>
+</body>
+
+</html>

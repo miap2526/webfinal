@@ -4,25 +4,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sub Page</title>
+    <title>스크롤링하시라</title>
     <style>
-        body {
+        * {
             margin: 0;
-            padding: 20px;
-            font-family: sans-serif;
-            background-color: #f0f0f0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        h1 {
-            color: #333;
+        body {
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+            background: #011428;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .viewport {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: url('parade.jpg') no-repeat center center;
+            background-size: 100% 100%;
+            /* Fit to screen, no cropping */
+        }
+
+        .stars-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+        @keyframes starTwinkle {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+                box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        @keyframes starMove {
+            0% {
+                margin-top: 0;
+            }
+
+            100% {
+                margin-top: -100px;
+            }
+        }
+
+        .header {
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            text-align: center;
+            color: #e0e1dd;
+            text-shadow: 0 2px 10px rgba(224, 225, 221, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            font-weight: 400;
+            letter-spacing: 6px;
+            font-family: 'Georgia', serif;
+            color: #f8edeb;
+            font-style: italic;
+        }
+
+        #windows-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .window {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: scale(0.8);
+            filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+            /* Image styling */
+            /* object-fit: cover; Removed to prevent cropping */
+            width: auto;
+            height: auto;
+            max-width: 300px;
+            /* Limit max width */
+            border-radius: 10px;
+        }
+
+        .window.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .window:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.6));
+            z-index: 100;
+        }
+
+        .home-link {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ccd5ae;
+            font-size: 1.2rem;
+            text-decoration: none;
+            z-index: 2000;
+            padding: 10px 20px;
+            background: rgba(13, 27, 42, 0.8);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .home-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
         }
     </style>
 </head>
 
 <body>
-    <h1>Sub Page</h1>
-    <p>이곳은 서브 페이지입니다.</p>
-    <a href="index.html">메인으로 돌아가기</a>
+    <div class="viewport">
+        <div class="header">
+            <h1>CHAOTIC NOTES</h1>
+        </div>
+
+        <div class="stars-layer" id="stars"></div>
+        <div id="windows-container"></div>
+
+        <!-- <a href="index.html" class="home-link">메인으로 돌아가기</a> -->
+    </div>
+
+    <script>
+        const linkData = [
+            { image: "BT.png", url: "https://example.com/bt" },
+            { image: "MF.png", url: "https://example.com/mf" },
+            { image: "T1.png", url: "https://example.com/t1" },
+            { image: "butterfly.png", url: "TOOTH.html" },
+            { image: "marbles.png", url: "marbles.html" },
+            { image: "IMG_1453.png", url: "wave.html" },
+            { image: "BMF.png", url: "https://example.com/1495" },
+            { image: "Hghost.jpg", url: "https://example.com/t1" },
+        ];
+
+        const container = document.getElementById('windows-container');
+        const starsContainer = document.getElementById('stars');
+        let verticalWindows = [];
+        let horizontalWindows = [];
+        let lastScrollTime = 0;
+
+        // Stars Logic
+        function createStars() {
+            const count = 150;
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                const twinkleDuration = Math.random() * 3 + 1;
+                const moveDuration = Math.random() * 20 + 30;
+                const delay = Math.random() * 5;
+                star.style.animation = `starTwinkle ${twinkleDuration}s ease-in-out infinite ${delay}s, starMove ${moveDuration}s linear infinite ${delay}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+        createStars();
+
+        function getRandomPosition() {
+            const padding = 100;
+            const x = padding + Math.random() * (window.innerWidth - padding * 2 - 250);
+            const y = padding + 150 + Math.random() * (window.innerHeight - padding * 2 - 350);
+            return { x, y };
+        }
+
+        function getRandomSize() {
+            // Only generate width, let height be auto
+            const w = 200 + Math.random() * 100;
+            return { w };
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function createWindow(data, type) {
+            const win = document.createElement('img');
+            win.className = 'window';
+            win.src = data.image; // Set image source
+            win.dataset.image = data.image; // Track for uniqueness
+            win.alt = "Gallery Image";
+
+            const size = getRandomSize();
+            const pos = getRandomPosition();
+
+            win.style.width = size.w + 'px';
+            // win.style.height = size.h + 'px'; // Removed to maintain aspect ratio
+            win.style.left = pos.x + 'px';
+            win.style.top = pos.y + 'px';
+
+            win.addEventListener('click', () => {
+                window.location.href = data.url;
+            });
+
+            container.appendChild(win);
+
+            setTimeout(() => {
+                win.classList.add('visible');
+            }, 50);
+
+            return win;
+        }
+
+        function removeWindows(type) {
+            const targetArray = type === 'vertical' ? verticalWindows : horizontalWindows;
+            targetArray.forEach(win => {
+                win.classList.remove('visible');
+                setTimeout(() => {
+                    if (win.parentNode) win.parentNode.removeChild(win);
+                }, 300);
+            });
+            if (type === 'vertical') verticalWindows = [];
+            else horizontalWindows = [];
+        }
+
+        function getVisibleImages() {
+            const visible = new Set();
+            [...verticalWindows, ...horizontalWindows].forEach(win => {
+                // Ensure we are tracking the src properly, use filename or full src
+                if (win.dataset.image) visible.add(win.dataset.image);
+            });
+            return visible;
+        }
+
+        function generateNewWindows(type) {
+            const usedImages = getVisibleImages();
+            // Filter available images
+            let availableData = linkData.filter(item => !usedImages.has(item.image));
+
+            // If we run out of images, just reuse (fallback)
+            if (availableData.length === 0) {
+                availableData = [...linkData];
+            }
+
+            const shuffledData = shuffleArray(availableData);
+            const numWindows = Math.min(shuffledData.length, 3 + Math.floor(Math.random() * 2)); // Ensure we don't pick more than available
+
+            for (let i = 0; i < numWindows; i++) {
+                const data = shuffledData[i];
+                const win = createWindow(data, type);
+
+                if (type === 'vertical') {
+                    verticalWindows.push(win);
+                } else {
+                    horizontalWindows.push(win);
+                }
+            }
+        }
+
+        // Initial generation
+        generateNewWindows('vertical');
+        generateNewWindows('horizontal');
+
+        // Scroll event
+        window.addEventListener('wheel', (e) => {
+            const now = Date.now();
+            if (now - lastScrollTime > 400) {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    removeWindows('vertical');
+                    generateNewWindows('vertical');
+                } else {
+                    removeWindows('horizontal');
+                    generateNewWindows('horizontal');
+                }
+                lastScrollTime = now;
+            }
+        });
+    </script>
 </body>
 
 </html>

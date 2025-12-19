@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marbles - Sea States</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100vh;
+            background-color: #000;
+            cursor: crosshair;
+        }
+
+        #image-container {
+            width: 100%;
+            position: relative;
+        }
+
+        #background-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: opacity 0.5s ease;
+        }
+
+        #word-display {
+            position: fixed;
+            font-family: 'Georgia', serif;
+            font-size: 1.5rem;
+            color: #fff;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            white-space: nowrap;
+            z-index: 100;
+            transform: translateX(-50%);
+        }
+
+        #word-display.visible {
+            opacity: 1;
+        }
+
+        #progress-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Georgia', serif;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            z-index: 100;
+        }
+
+        #completion-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Georgia', serif;
+            font-size: 2rem;
+            color: #fff;
+            text-align: center;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 100;
+        }
+
+        #completion-message.visible {
+            opacity: 1;
+        }
+
+        #completion-message a {
+            display: block;
+            margin-top: 30px;
+            color: #aaddff;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        #completion-message a:hover {
+            color: #fff;
+        }
+
+        #completion-message .or-text {
+            display: inline-block;
+            margin: 0 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .link-row {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .link-row a {
+            display: inline-block;
+            margin: 0;
+        }
+
+        .calm-text {
+            font-size: 4rem;
+            display: inline-block;
+            opacity: 0;
+            transform-origin: center bottom;
+        }
+
+        #completion-message.visible .calm-text {
+            animation: tiltAndDissolve 10s ease forwards;
+        }
+
+        @keyframes tiltAndDissolve {
+            0% {
+                transform: rotateX(0deg);
+                opacity: 1;
+                filter: blur(0px);
+            }
+
+            40% {
+                transform: rotateX(0deg);
+                opacity: 1;
+                filter: blur(0px);
+            }
+
+            70% {
+                transform: rotateX(-70deg);
+                opacity: 1;
+                filter: blur(0px);
+            }
+
+            85% {
+                transform: rotateX(-85deg);
+                opacity: 0.8;
+                filter: blur(2px);
+            }
+
+            100% {
+                transform: rotateX(-90deg) translateY(50px);
+                opacity: 0;
+                filter: blur(10px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="image-container">
+        <img id="background-image" src="" alt="Sea State">
+    </div>
+    <div id="word-display"></div>
+    <div id="progress-indicator"></div>
+    <div id="completion-message">
+        <span class="calm-text">The sea is now calm.</span>
+        <div class="link-row">
+            <a href="index.html">Return To Cover</a>
+            <span class="or-text">or</span>
+            <a href="endofthenote.html">Close The Note</a>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration Area ---
+
+        const imageFolder = 'vos_wave/';
+        const images = [
+            '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png',
+            '8.png', '9.png', '10.png', '11.png', '12.png', '13.png'
+        ];
+
+        const texts = [
+            "The air is filled with foam and spray; sea completely white with driving spray; visibility very seriously affected.",
+            "Exceptionally high waves (small and medium-sized ships might be lost to view for a time behind the waves); the sea is completely covered with long white patches of foam lying along the direction of the wind; everywhere the edges of the wave crests are blown into froth; visibility affected.",
+            "Very high waves with long overhanging crests; the resulting foam, in great patches, is blown in dense white streaks along the direction of the wind; on the whole, the sea surface takes a white appearance; the tumbling of the sea becomes heavy and shock-like; visibility affected.",
+            "High waves; dense streaks of foam along the direction of the wind; crests of waves begin to topple, tumble, and roll over; spray may affect visibility.",
+            "Moderately high waves of greater length; edges of crests begin to break into the spindrift; the foam is blown in well-marked streaks along the direction of the wind.",
+            "Sea heaps up and white foam from breaking waves begins to be blown in streaks along the direction of the wind.",
+            "Large waves begin to form; the white foam crests are more extensive everywhere (probably some spray).",
+            "Moderate waves, taking a more pronounced long form; many white horses are formed (chance of some spray).",
+            "Small waves, becoming longer; fairly frequent white horses.",
+            "Large wavelets; crests begin to break; foam of glassy appearance; perhaps scattered white horses (white caps).",
+            "Small wavelets, still short, but more pronounced; crests have a glassy appearance but do not break.",
+            "Ripples with the appearance of scales are formed, without foam crests.",
+            "Sea like a mirror."
+        ];
+
+        // ------------------------------------------
+
+        const backgroundImage = document.getElementById('background-image');
+        const wordDisplay = document.getElementById('word-display');
+        const progressIndicator = document.getElementById('progress-indicator');
+        const completionMessage = document.getElementById('completion-message');
+
+        let currentImageIndex = 0;
+        let currentWords = [];
+        let currentWordIndex = 0;
+        let isComplete = false;
+
+        // Preload images
+        images.forEach(img => {
+            const preload = new Image();
+            preload.src = imageFolder + img;
+        });
+
+        function updateBackground() {
+            if (currentImageIndex < images.length) {
+                backgroundImage.src = imageFolder + images[currentImageIndex];
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            progressIndicator.innerText = `Image ${currentImageIndex + 1} / ${images.length} | Word ${currentWordIndex} / ${currentWords.length}`;
+        }
+
+        function loadCurrentText() {
+            if (currentImageIndex < texts.length) {
+                currentWords = texts[currentImageIndex].split(' ');
+                currentWordIndex = 0;
+                updateProgress();
+            }
+        }
+
+        function showWord(x, y) {
+            if (isComplete) return;
+            if (currentWordIndex >= currentWords.length) return;
+
+            const word = currentWords[currentWordIndex];
+            wordDisplay.innerText = word;
+            wordDisplay.style.left = x + 'px';
+            wordDisplay.style.top = (y - 20) + 'px';
+            wordDisplay.classList.add('visible');
+
+            currentWordIndex++;
+            updateProgress();
+
+            // Check if text is complete
+            if (currentWordIndex >= currentWords.length) {
+                // Move to next image/text
+                setTimeout(() => {
+                    currentImageIndex++;
+
+                    if (currentImageIndex >= images.length) {
+                        // All done
+                        isComplete = true;
+                        wordDisplay.classList.remove('visible');
+                        progressIndicator.style.display = 'none';
+                        completionMessage.classList.add('visible');
+                    } else {
+                        // Load next
+                        updateBackground();
+                        loadCurrentText();
+                        wordDisplay.classList.remove('visible');
+                    }
+                }, 500);
+            }
+        }
+
+        function hideWord() {
+            wordDisplay.classList.remove('visible');
+        }
+
+        // Initialize
+        updateBackground();
+        loadCurrentText();
+
+        // Mouse move handler
+        let lastMoveTime = 0;
+        const moveThreshold = 320; // ms between word changes
+
+        document.addEventListener('mousemove', (e) => {
+            if (isComplete) return;
+
+            const now = Date.now();
+            if (now - lastMoveTime < moveThreshold) return;
+            lastMoveTime = now;
+
+            // Hide previous word briefly, then show next
+            hideWord();
+            setTimeout(() => {
+                showWord(e.clientX, e.clientY - 30);
+            }, 150);
+        });
+
+    </script>
+</body>
+
+</html>

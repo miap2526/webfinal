@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>End of the Note</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100vh;
+            background-color: #000;
+            overflow-x: hidden;
+        }
+
+        #image-container {
+            width: 100%;
+        }
+
+        #main-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .marquee-container {
+            position: fixed;
+            right: 90px;
+            top: 0;
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            transform: scaleX(-1);
+            font-family: 'Georgia', serif;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 5px;
+            animation: scrollDown 12s linear infinite;
+            z-index: 100;
+        }
+
+        @keyframes scrollDown {
+            0% {
+                transform: scaleX(-1) scaleY(-1) translateY(100%);
+            }
+
+            100% {
+                transform: scaleX(-1) scaleY(-1) translateY(-100vh);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="image-container">
+        <img id="main-image" src="endofthenote.jpg" alt="End of the Note">
+    </div>
+    <div class="marquee-container">
+        bye bye snooper. until we sneak again.
+    </div>
+</body>
+
+</html>
